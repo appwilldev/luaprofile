@@ -14,15 +14,16 @@ luaprofile.so: luaprofile.o
 luaprofile: main.o
 	$(CC) $< -o $@
 
+main.o: main.c
+	$(CC) -c $< -o $@ $(CFLAGS) -DLIB_FILE=\"$(PREFIX)/lib/luaprofile.so\"
+
 clean:
 	-rm *.o
 
 install:
 	$(INSTALL) -m755 -t $(PREFIX)/lib luaprofile.so
 	$(INSTALL) -m755 -t $(PREFIX)/bin luaprofile
-	ldconfig
 
 uninstall:
 	rm -f $(PREFIX)/lib/luaprofile.so
 	rm -f $(PREFIX)/bin/luaprofile
-	-ldconfig

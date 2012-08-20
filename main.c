@@ -4,7 +4,6 @@
 #include<string.h>
 #include<getopt.h>
 
-#define LIB_FILE "luaprofile.so"
 #define PRELOAD_LEN 2048
 
 void usage(const char* name){

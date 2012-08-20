@@ -1,4 +1,4 @@
-This is a simple module to profile Lua functions.
+This is a simple library (and a convenient executable) to profile Lua functions.
 
 Usage
 =====

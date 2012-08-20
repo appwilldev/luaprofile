@@ -7,7 +7,11 @@
 #define PRELOAD_LEN 2048
 
 void usage(const char* name){
-  printf("usage: %s -f LOGFILE -l LUA_LIBRARY [-L PRELOAD_LIB] COMMAND ...\n",
+  printf("usage: %s -l LUA_LIBRARY [-o LOGFILE] [-L PRELOAD_LIB] COMMAND ...\n\n\
+      -l, --lualib\t\tThe Lua library\n\
+      -o, --logfile\t\tThe log file, if not stderr\n\
+      -L, --preloadlib\t\tThe 'luaprofile.so' library, if not at default location\n\n\
+environment variables 'LUAP_LIBRARY', 'LUAP_LOGFILE' also works.\n",
       name);
 }
 
@@ -34,10 +38,10 @@ int main(int argc, char **argv){
 
     switch(c){
       case 'o':
-	setenv("LUAP_LOGFILE", optarg, 0);
+	setenv("LUAP_LOGFILE", optarg, 1);
 	break;
       case 'l':
-	setenv("LUAP_LIBRARY", optarg, 0);
+	setenv("LUAP_LIBRARY", optarg, 1);
 	break;
       case 'L':
 	preload = optarg;
@@ -53,6 +57,10 @@ int main(int argc, char **argv){
     }
   }
   unsetenv("POSIXLY_CORRECT");
+  if(optind >= argc){
+    usage(argv[0]);
+    return 1;
+  }
   preload_env = malloc(PRELOAD_LEN);
   if(!preload){
     strcpy(preload_env, LIB_FILE);

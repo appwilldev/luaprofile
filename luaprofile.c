@@ -63,7 +63,7 @@ lua_State* luaL_newstate(void){
   lib_init();
   lua_State *L = orig_luaL_newstate();
   lua_sethook(L, hookfunc, LUA_MASKCALL|LUA_MASKRET, 0);
-  fprintf(logfile, "hook set\n");
+  fprintf(logfile, ":: Lua profiling library loaded.\n");
   fflush(logfile);
   return L;
 }
@@ -75,8 +75,8 @@ static int cmp_funccall(struct funccall *a, struct funccall *b){
 void lua_close(lua_State *L){
   lib_init();
   orig_lua_close(L);
+  fprintf(logfile, ":: Lua closed, stats follow.\n");
   printStats();
-  fprintf(logfile, "lua closed\n");
   fflush(logfile);
 }
 
@@ -210,7 +210,9 @@ static void hookfunc(lua_State *L, lua_Debug *ar){
       event = "call";
       break;
     case LUA_HOOKTAILRET:
+#ifdef DEBUG
       fprintf(logfile, "Tail call return!\n");
+#endif
     case LUA_HOOKRET:
       fc->r_count++;
       state = 'r';
@@ -225,8 +227,10 @@ static void hookfunc(lua_State *L, lua_Debug *ar){
   fc->last_time = t;
   fc->state = state;
 
-  /* fprintf(logfile, "%4s: [%s:%d] func %s %s\n", ar->what, key, *(int*)(key + FILENAME_LEN + 2 + FUNCNAME_LEN),
-   *     key + FILENAME_LEN + 1, event);                                                                          */
+#ifdef DEBUG
+  fprintf(logfile, "%4s: [%s:%d] func %s %s\n", ar->what, key, *(int*)(key + FILENAME_LEN + 2 + FUNCNAME_LEN),
+      key + FILENAME_LEN + 1, event);
+#endif
 }
 
 static void lib_init() {

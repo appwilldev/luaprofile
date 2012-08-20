@@ -35,10 +35,8 @@ int main(int argc, char **argv){
     switch(c){
       case 'o':
 	setenv("LUAP_LOGFILE", optarg, 0);
-	printf("logfile is %s.\n", optarg);
 	break;
       case 'l':
-	printf("library is %s.\n", optarg);
 	setenv("LUAP_LIBRARY", optarg, 0);
 	break;
       case 'L':

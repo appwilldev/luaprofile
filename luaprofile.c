@@ -4,6 +4,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<unistd.h>
+#include<signal.h>
 #include<sys/time.h>
 
 #include<uthash.h>
@@ -26,6 +27,7 @@ struct funccall {
 static void lib_init();
 static struct funccall *funccalls = NULL;
 static int lib_initialized = 0;
+static int sig_print = 0;
 static FILE *logfile = NULL;
 static lua_State* (*orig_luaL_newstate) (void) = 0;
 static void       (*orig_lua_close) (lua_State *L) = 0;
@@ -35,6 +37,7 @@ static void printStats();
 static char* generate_key(lua_Debug *ar);
 static inline void copynright(char* dest, const char* src, int n);
 static int cmp_funccall(struct funccall *a, struct funccall *b);
+static void onsignal(int signo);
 
 static void die(char *fmt, ...) {
   va_list args;
@@ -77,6 +80,10 @@ void lua_close(lua_State *L){
   fflush(logfile);
 }
 
+static void onsignal(int signo){
+  sig_print = 1;
+}
+
 static void printStats(){
   struct funccall *fc, *tmp;
   char *key, *func;
@@ -103,10 +110,13 @@ static void printStats(){
       fprintf(logfile, "%8s %9.3lf %8.3lf %s:%d(%s)\n",
 	  buf, tottime, percall, key, lineno, func);
     }
-    HASH_DEL(funccalls, fc);
-    free(fc);
+    if(!sig_print){
+      HASH_DEL(funccalls, fc);
+      free(fc);
+    }
   }
   fprintf(logfile, "============================ Stats End (pid %5d) ============================\n", getpid());
+  fflush(logfile);
   lockf(fd, F_ULOCK, 0);
 }
 
@@ -156,9 +166,18 @@ static void hookfunc(lua_State *L, lua_Debug *ar){
   long t;
   lua_getinfo(L, "nS", ar);
   if(strcmp(ar->what, "C") == 0){
+    if(sig_print){
+      printStats();
+      sig_print = 0;
+    }
     return;
   }
   gettimeofday(&thistime, NULL);
+  if(sig_print){
+    printStats();
+    sig_print = 0;
+  }
+
   t = thistime.tv_sec * 1000 * 1000 + thistime.tv_usec;
 
   char* key = generate_key(ar);
@@ -237,6 +256,11 @@ static void lib_init() {
   logfile = fopen(path, "a");
   if(!logfile)
     die("Can't open logfile %s", path);
+
+  struct sigaction act, oact;
+  memset(&act, 0, sizeof(act));
+  act.sa_handler = onsignal;
+  sigaction(SIGPROF, &act, &oact);
 
   lib_initialized = 1;
 }

@@ -61,6 +61,7 @@ lua_State* luaL_newstate(void){
   lua_State *L = orig_luaL_newstate();
   lua_sethook(L, hookfunc, LUA_MASKCALL|LUA_MASKRET, 0);
   fprintf(logfile, "hook set\n");
+  fflush(logfile);
   return L;
 }
 
@@ -73,20 +74,35 @@ void lua_close(lua_State *L){
   orig_lua_close(L);
   printStats();
   fprintf(logfile, "lua closed\n");
+  fflush(logfile);
 }
 
 static void printStats(){
   struct funccall *fc, *tmp;
-  char* key;
+  char *key, *func;
+  char buf[20];
+  int lineno;
   int fd = fileno(logfile);
+  double tottime, percall;
+
+  HASH_SORT(funccalls, cmp_funccall);
   lockf(fd, F_LOCK, 0);
   fprintf(logfile, "============================== Stats (pid %5d) ==============================\n", getpid());
-  HASH_SORT(funccalls, cmp_funccall);
+  fprintf(logfile, "  ncalls   tottime  percall file:lineno(function)\n");
   HASH_ITER(hh, funccalls, fc, tmp){
     key = fc->key;
-    fprintf(logfile, "[%s:%d] func %s (%d, %d, %d): total time %0.4lfms\n",
-	key, *(int*)(key + FILENAME_LEN + 2 + FUNCNAME_LEN), key + FILENAME_LEN + 1,
-	fc->c_count, fc->r_count, fc->c_count - fc->r_count, fc->time / (double) 1000);
+    lineno = *(int*)(key + FILENAME_LEN + 2 + FUNCNAME_LEN);
+    func = key + FILENAME_LEN + 1;
+    tottime = fc->time / (double) 1000;
+    percall = tottime / fc->c_count;
+    if(fc->c_count == fc->r_count){
+      fprintf(logfile, "%8d %9.3lf %8.3lf %s:%d(%s)\n",
+	  fc->c_count, tottime, percall, key, lineno, func);
+    }else{
+      snprintf(buf, 20, "%d/%d", fc->c_count, fc->r_count);
+      fprintf(logfile, "%8s %9.3lf %8.3lf %s:%d(%s)\n",
+	  buf, tottime, percall, key, lineno, func);
+    }
     HASH_DEL(funccalls, fc);
     free(fc);
   }
@@ -190,8 +206,8 @@ static void hookfunc(lua_State *L, lua_Debug *ar){
   fc->last_time = t;
   fc->state = state;
 
-  fprintf(logfile, "%4s: [%s:%d] func %s %s\n", ar->what, key, *(int*)(key + FILENAME_LEN + 2 + FUNCNAME_LEN),
-      key + FILENAME_LEN + 1, event);
+  /* fprintf(logfile, "%4s: [%s:%d] func %s %s\n", ar->what, key, *(int*)(key + FILENAME_LEN + 2 + FUNCNAME_LEN),
+   *     key + FILENAME_LEN + 1, event);                                                                          */
 }
 
 static void lib_init() {

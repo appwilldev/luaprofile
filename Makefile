@@ -2,6 +2,7 @@ CC=gcc
 CFLAGS=-g -Wall -fPIC -O2 $(DEFINE)
 LDFLAGS=-ldl
 INSTALL=install
+PREFIX=/usr/local
 
 .PHONY: all clean
 
@@ -20,3 +21,8 @@ install:
 	$(INSTALL) -m755 -t $(PREFIX)/lib luaprofile.so
 	$(INSTALL) -m755 -t $(PREFIX)/bin luaprofile
 	ldconfig
+
+uninstall:
+	rm -f $(PREFIX)/lib/luaprofile.so
+	rm -f $(PREFIX)/bin/luaprofile
+	-ldconfig

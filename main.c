@@ -13,7 +13,7 @@ void usage(const char* name){
 
 int main(int argc, char **argv){
   static struct option long_options[] = {
-    {"logfile",    required_argument, 0, 'f'},
+    {"logfile",    required_argument, 0, 'o'},
     {"lualib",     required_argument, 0, 'l'},
     {"preloadlib", required_argument, 0, 'L'},
     {"help",       no_argument,       0, 'h'},
@@ -28,12 +28,12 @@ int main(int argc, char **argv){
   char *old_preload = getenv("LD_PRELOAD");
 
   while(1){
-    c = getopt_long(argc, argv, "hf:l:L:", long_options, &n);
+    c = getopt_long(argc, argv, "ho:l:L:", long_options, &n);
     if(c == -1)
       break;
 
     switch(c){
-      case 'f':
+      case 'o':
 	setenv("LUAP_LOGFILE", optarg, 0);
 	printf("logfile is %s.\n", optarg);
 	break;

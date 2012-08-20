@@ -255,7 +255,7 @@ static void lib_init() {
   path = getenv("LUAP_LOGFILE");
   logfile = fopen(path, "a");
   if(!logfile)
-    die("Can't open logfile %s", path);
+    logfile = stderr;
 
   struct sigaction act, oact;
   memset(&act, 0, sizeof(act));

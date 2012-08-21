@@ -76,5 +76,6 @@ int main(int argc, char **argv){
   setenv("LD_PRELOAD", preload_env, 1);
   execvp(argv[optind], argv + optind);
 
-  return 0;
+  perror("exec");
+  return 2;
 }

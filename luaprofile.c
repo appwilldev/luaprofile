@@ -14,6 +14,7 @@
 #define FILENAME_LEN 50
 #define FUNCNAME_LEN 25
 #define KEY_LEN (FILENAME_LEN + 1 + FUNCNAME_LEN + 1 + sizeof(int))
+#define FIRST_COL_WIDTH "10"
 
 struct funccall {
     char key[KEY_LEN];
@@ -122,11 +123,11 @@ static void printStats(){
     tottime = fc->time / (double) 1000;
     percall = tottime / fc->c_count;
     if(fc->c_count == fc->r_count){
-      fprintf(logfile, "%9d %9.3lf %8.3lf %s:%d(%s)\n",
+      fprintf(logfile, "%"FIRST_COL_WIDTH"d %9.3lf %8.3lf %s:%d(%s)\n",
 	  fc->c_count, tottime, percall, key, lineno, func);
     }else{
       snprintf(buf, sizeof(buf), "%d/%d", fc->c_count, fc->r_count);
-      fprintf(logfile, "%9s %9.3lf %8.3lf %s:%d(%s)\n",
+      fprintf(logfile, "%"FIRST_COL_WIDTH"s %9.3lf %8.3lf %s:%d(%s)\n",
 	  buf, tottime, percall, key, lineno, func);
     }
     if(!sig_print || stopped){

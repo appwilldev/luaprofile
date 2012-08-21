@@ -219,6 +219,7 @@ static void hookfunc(lua_State *L, lua_Debug *ar){
       event = "return";
       break;
     default:
+      state = 'X'; /* make gcc happy */
       die("Shouldn't reach here!");
   }
   if(state == 'r' && fc->state == 'c'){

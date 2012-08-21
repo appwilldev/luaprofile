@@ -18,9 +18,9 @@ main.o: main.c
 	$(CC) -c $< -o $@ $(CFLAGS) -DLIB_FILE=\"$(PREFIX)/lib/luaprofile.so\"
 
 clean:
-	-rm *.o
+	-rm *.o luaprofile.so luaprofile
 
-install:
+install: all
 	$(INSTALL) -m755 -t $(PREFIX)/lib luaprofile.so
 	$(INSTALL) -m755 -t $(PREFIX)/bin luaprofile
 

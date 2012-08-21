@@ -3,6 +3,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<time.h>
 #include<unistd.h>
 #include<signal.h>
 #include<sys/time.h>
@@ -96,10 +97,24 @@ static void printStats(){
   int fd = fileno(logfile);
   double tottime, percall;
 
+  time_t t;
+  struct tm *tm;
+  t = time(NULL);
+  tm = localtime(&t);
+  if(!tm){
+    perror("localtime");
+  }
+  if(strftime(buf, sizeof(buf), "%m-%d %H:%M:%S", tm) == 0){
+    tm = NULL;
+  }
+
   HASH_SORT(funccalls, cmp_funccall);
   lockf(fd, F_LOCK, 0);
+  if(tm){
+    fprintf(logfile, ":: Printing stats at %s.\n", buf);
+  }
   fprintf(logfile, "============================== Stats (pid %5d) ==============================\n", getpid());
-  fprintf(logfile, "  ncalls   tottime  percall file:lineno(function)\n");
+  fprintf(logfile, "   ncalls   tottime  percall file:lineno(function)\n");
   HASH_ITER(hh, funccalls, fc, tmp){
     key = fc->key;
     lineno = *(int*)(key + FILENAME_LEN + 2 + FUNCNAME_LEN);
@@ -107,11 +122,11 @@ static void printStats(){
     tottime = fc->time / (double) 1000;
     percall = tottime / fc->c_count;
     if(fc->c_count == fc->r_count){
-      fprintf(logfile, "%8d %9.3lf %8.3lf %s:%d(%s)\n",
+      fprintf(logfile, "%9d %9.3lf %8.3lf %s:%d(%s)\n",
 	  fc->c_count, tottime, percall, key, lineno, func);
     }else{
-      snprintf(buf, 20, "%d/%d", fc->c_count, fc->r_count);
-      fprintf(logfile, "%8s %9.3lf %8.3lf %s:%d(%s)\n",
+      snprintf(buf, sizeof(buf), "%d/%d", fc->c_count, fc->r_count);
+      fprintf(logfile, "%9s %9.3lf %8.3lf %s:%d(%s)\n",
 	  buf, tottime, percall, key, lineno, func);
     }
     if(!sig_print || stopped){

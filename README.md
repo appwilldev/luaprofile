@@ -3,14 +3,18 @@ This is a simple library (and a convenient executable) to profile Lua functions.
 Usage
 =====
 
+Install
+-------
 Compile and install it by running
 ```sh
 make
 sudo make install
 ```
 
-You can also set `PREFIX=xxx` to install to a different location.
+You can also append `PREFIX=xxx` when running these commands to install to a different location.
 
+Running
+-------
 ```
 usage: luaprofile -l LUA_LIBRARY [-o LOGFILE] [-L PRELOAD_LIB] COMMAND ...
 
@@ -21,7 +25,10 @@ usage: luaprofile -l LUA_LIBRARY [-o LOGFILE] [-L PRELOAD_LIB] COMMAND ...
 environment variables 'LUAP_LIBRARY', 'LUAP_LOGFILE' also work.
 ```
 
-Sending a `SIGPROF` signal will make it print stats on next Lua function call.
+Signals
+-------
+* Sending a `SIGPROF` signal will make it print stats on next Lua function call.
+* Sending a `SIGPWR` signal will make it print stats on next Lua function call, free the memory it used and remove the debug hook.
 
 Note
 ====

@@ -28,6 +28,7 @@ static void lib_init();
 static struct funccall *funccalls = NULL;
 static int lib_initialized = 0;
 static int sig_print = 0;
+static int stopped = 0;
 static FILE *logfile = NULL;
 static lua_State* (*orig_luaL_newstate) (void) = 0;
 static void       (*orig_lua_close) (lua_State *L) = 0;
@@ -81,7 +82,10 @@ void lua_close(lua_State *L){
 }
 
 static void onsignal(int signo){
-  sig_print = 1;
+  if(signo == SIGPROF)
+    sig_print = 1;
+  else if(signo == SIGPWR)
+    stopped = 1;
 }
 
 static void printStats(){
@@ -110,7 +114,7 @@ static void printStats(){
       fprintf(logfile, "%8s %9.3lf %8.3lf %s:%d(%s)\n",
 	  buf, tottime, percall, key, lineno, func);
     }
-    if(!sig_print){
+    if(!sig_print || stopped){
       HASH_DEL(funccalls, fc);
       free(fc);
     }
@@ -159,11 +163,19 @@ static char* generate_key(lua_Debug *ar){
 }
 
 static void hookfunc(lua_State *L, lua_Debug *ar){
+#ifdef DEBUG
   char *event;
+#endif
   char state;
   struct funccall *fc;
   struct timeval thistime;
   long t;
+  if(stopped){
+    fprintf(logfile, ":: stop signal received, stats follow.\n");
+    printStats();
+    lua_sethook(L, hookfunc, 0, 0);
+    return;
+  }
   lua_getinfo(L, "nS", ar);
   if(strcmp(ar->what, "C") == 0){
     if(sig_print){
@@ -207,7 +219,9 @@ static void hookfunc(lua_State *L, lua_Debug *ar){
     case LUA_HOOKCALL:
       fc->c_count++;
       state = 'c';
+#ifdef DEBUG
       event = "call";
+#endif
       break;
     case LUA_HOOKTAILRET:
 #ifdef DEBUG
@@ -216,7 +230,9 @@ static void hookfunc(lua_State *L, lua_Debug *ar){
     case LUA_HOOKRET:
       fc->r_count++;
       state = 'r';
+#ifdef DEBUG
       event = "return";
+#endif
       break;
     default:
       state = 'X'; /* make gcc happy */
@@ -262,10 +278,11 @@ static void lib_init() {
   if(!logfile)
     logfile = stderr;
 
-  struct sigaction act, oact;
+  struct sigaction act;
   memset(&act, 0, sizeof(act));
   act.sa_handler = onsignal;
-  sigaction(SIGPROF, &act, &oact);
+  sigaction(SIGPROF, &act, NULL);
+  sigaction(SIGPWR, &act, NULL);
 
   lib_initialized = 1;
 }

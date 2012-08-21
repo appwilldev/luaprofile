@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -fPIC -O2 $(DEFINE)
+CFLAGS=-g -Wall -fPIC -O2 -I. $(DEFINE)
 LDFLAGS=-ldl
 INSTALL=install
 PREFIX=/usr/local

@@ -11,7 +11,7 @@ void usage(const char* name){
       -l, --lualib\t\tThe Lua library\n\
       -o, --logfile\t\tThe log file, if not stderr\n\
       -L, --preloadlib\t\tThe 'luaprofile.so' library, if not at default location\n\n\
-environment variables 'LUAP_LIBRARY', 'LUAP_LOGFILE' also works.\n",
+environment variables 'LUAP_LIBRARY', 'LUAP_LOGFILE' also work.\n",
       name);
 }
 

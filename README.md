@@ -18,7 +18,7 @@ usage: luaprofile -l LUA_LIBRARY [-o LOGFILE] [-L PRELOAD_LIB] COMMAND ...
       -o, --logfile             The log file, if not stderr
       -L, --preloadlib          The 'luaprofile.so' library, if not at default location
 
-environment variables 'LUAP_LIBRARY', 'LUAP_LOGFILE' also works.
+environment variables 'LUAP_LIBRARY', 'LUAP_LOGFILE' also work.
 ```
 
 Sending a `SIGPROF` signal will make it print stats on next Lua function call.

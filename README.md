@@ -2,6 +2,9 @@ This is a simple library (and a convenient executable) to profile Lua functions.
 
 Usage
 =====
+Prerequisites
+-------
+You should have uthash(v1.9.7+) installed into your system.
 
 Install
 -------

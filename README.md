@@ -5,12 +5,16 @@ Usage
 Prerequisites
 -------
 You should have uthash(v1.9.7+) installed into your system.
+```
+git clone git://github.com/troydhanson/uthash.git
+cp uthash/src/uthash.h /usr/local/include/
+```
 
 Install
 -------
 Compile and install it by running
 ```sh
-make
+DEFINE=-I/usr/local/openresty/luajit/include/luajit-2.0/ make
 sudo make install
 ```
 

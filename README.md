@@ -30,6 +30,9 @@ usage: luaprofile -l LUA_LIBRARY [-o LOGFILE] [-L PRELOAD_LIB] COMMAND ...
       -L, --preloadlib          The 'luaprofile.so' library, if not at default location
 
 environment variables 'LUAP_LIBRARY', 'LUAP_LOGFILE' also work.
+
+example:
+luaprofile -l /usr/local/openresty/luajit/lib/libluajit-5.1.so -o ./luap.log ./bin/start.sh
 ```
 
 Signals
